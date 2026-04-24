@@ -74,8 +74,8 @@ const projects: Project[] = [
     priority: "HIGH",
     startDate: new Date().toISOString(),
     deadline: new Date().toISOString(),
-    clientId: "1",
-    managerId: "1",
+    client: {id: "1", name: ""},
+    manager: {id: "1", name: ""},
     createdAt: new Date().toISOString()
   },
   {
@@ -86,8 +86,8 @@ const projects: Project[] = [
     priority: "MEDIUM",
     startDate: new Date().toISOString(),
     deadline: new Date().toISOString(),
-    clientId: "2",
-    managerId: "2",
+    client: {id: "2", name: ""},
+    manager: {id: "2", name: ""},
     createdAt: new Date().toISOString()
   }
 ]
