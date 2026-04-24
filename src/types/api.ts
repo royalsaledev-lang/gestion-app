@@ -1,4 +1,4 @@
-import { Client, Freelancer, FreelancerMember, Payment, Project, Task, User } from "./database"
+import { Client, Freelancer, Payment, Project, Task, User } from "./database"
 
 export interface ProjectWithRelations extends Project {
   client?: Client
