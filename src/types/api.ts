@@ -1,4 +1,4 @@
-import { Client, Freelancer, Payment, Project, Task, User } from "./database"
+import { Client, Freelancer, Payment, Project, Task, User, UserLite } from "./database"
 
 export interface ProjectWithRelations extends Project {
   client?: Client
@@ -16,10 +16,5 @@ export interface TaskWithRelations extends Task {
 }
 
 
-
-
-export interface FreelancerWithMembers extends Freelancer {
-  members?: FreelancerMember[]
-}
 
 
