@@ -1,6 +1,5 @@
-import { Priority, UserRole } from "./database"
+import { Priority, TaskStatus, UserRole } from "./database"
 
-import { FreelancerStatus } from "./database"
 
 export type ProjectStatus =
   | "UPCOMING"
@@ -12,6 +11,13 @@ export type ProjectStatus =
 export interface CreateMemberDTO {
   name: string
   email: string
+  role: UserRole
+}
+
+export interface CreateUserForm {
+  name: string
+  email: string
+  password: string
   role: UserRole
 }
 
@@ -44,17 +50,7 @@ export interface CreateTaskDTO {
   deadline?: string
 
   priority: Priority
-  status: ProjectStatus
+  status: TaskStatus
 }
 
-
-export interface CreateFreelancerDTO {
-  name: string
-  email?: string
-  phone?: string
-  specialty?: string
-  status?: FreelancerStatus
-}
-
-export type UpdateFreelancerDTO = Partial<CreateFreelancerDTO>
 

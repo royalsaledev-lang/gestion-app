@@ -37,11 +37,6 @@ export type PaymentStatus =
   | "ADVANCE"
   | "PAID"
 
-export type FreelancerStatus =
-  | "ACTIVE"
-  | "INACTIVE"
-
-
 export interface User {
   id: string
   name: string
@@ -54,9 +49,21 @@ export interface User {
   updatedAt: string
 }
 
+export interface ProjectParticipant {
+  id: string
+
+  projectId: string
+  userId: string
+
+  user: UserLite
+
+  createdAt: string
+}
+
 
 export interface Client {
   id: string
+
   name: string
   email?: string
   phone?: string
@@ -65,11 +72,8 @@ export interface Client {
   status: ClientStatus
 
   createdAt: string
-}
 
-export interface ProjectFreelancerRelation {
-  id: string
-  freelancer: Freelancer
+  projects?: Project[]
 }
 
 export interface Project {
@@ -93,12 +97,10 @@ export interface Project {
     name: string
   }
 
-  freelancers?: {
-    id: string
-    freelancer: Freelancer
-  }[]
+  participants?: ProjectParticipant[]
 
   createdAt: string
+  updatedAt?: string
 }
 
 export interface Task {
@@ -115,29 +117,22 @@ export interface Task {
 
   projectId: string
 
+  // Créateur de la tâche
   createdById: string
+
+  // Assignation (EXECUTANT ou PRESTATAIRE)
   assignedToId?: string
 
-  createdAt: string
-}
-
-
-
-export interface Freelancer {
-  id: string
-
-  name: string
-  email?: string
-  phone?: string
-  specialty?: string
-
-  members: UserLite
-
-  user: User
-
-  status: FreelancerStatus
+  // Validation finale (ADMIN ou MANAGER)
+  validatedById?: string
 
   createdAt: string
+  updatedAt?: string
+
+  // Relations
+  createdBy?: UserLite
+  assignedTo?: UserLite
+  validatedBy?: UserLite
 }
 
 
@@ -147,15 +142,6 @@ export interface UserLite {
   name: string
   email: string
   role: "ADMIN" | "MANAGER" | "PRESTATAIRE" | "EXECUTANT"
-}
-
-
-
-export interface ProjectFreelancer {
-  id: string
-
-  projectId: string
-  freelancerId: string
 }
 
 
@@ -170,7 +156,6 @@ export interface Payment {
 
   createdAt: string
 }
-
 
 
 export interface Comment {
@@ -194,3 +179,6 @@ export interface ActivityLog {
 
   createdAt: string
 }
+
+
+

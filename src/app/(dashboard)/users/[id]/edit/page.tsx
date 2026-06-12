@@ -27,14 +27,19 @@ export default function EditUserPage() {
   useEffect(() => {
     if (!accessToken) return
 
-    if(["PRESATATAIRE", "EXECUTANT"].includes(user?.role ?? "")){
-      router.back()
+    if (
+      user?.role === "PRESTATAIRE" ||
+      user?.role === "EXECUTANT"
+    ) {
+      router.replace("/")
+      return
     }
 
   }, [accessToken, user])
 
   // 🔥 LOAD USER
   useEffect(() => {
+    if (!user) return
     if (!id) return
 
     async function fetchUser() {
@@ -138,7 +143,6 @@ export default function EditUserPage() {
       </div>
 
       <div className="col-span-2 space-y-1">
-        <label className="text-sm">Rôle</label>
         <select
           className="w-full h-11 border rounded px-3"
           value={form.role}
@@ -149,7 +153,10 @@ export default function EditUserPage() {
             })
           }
         >
-          <option value="ADMIN">ADMIN</option>
+          {user?.role === "ADMIN" && (
+            <option value="ADMIN">ADMIN</option>
+          )}
+
           <option value="MANAGER">MANAGER</option>
           <option value="PRESTATAIRE">PRESTATAIRE</option>
           <option value="EXECUTANT">EXECUTANT</option>
@@ -166,67 +173,5 @@ export default function EditUserPage() {
 
   </div>
 </div>    
-    // <div className="flex items-center justify-center min-h-[80vh]">
-    // <div className="space-y-6 w-[360px]">
-
-    //   <h1 className="text-xl font-semibold tracking-tight">
-    //     Modifier utilisateur
-    //   </h1>
-
-    //   <div className="space-y-4">
-
-    //     <Input
-    //       placeholder="Nom"
-    //       value={form.name}
-    //       onChange={(e) =>
-    //         setForm({ ...form, name: e.target.value })
-    //       }
-    //       className="h-11 text-base"
-    //     />
-
-    //     <Input
-    //       placeholder="Email"
-    //       value={form.email}
-    //       onChange={(e) =>
-    //         setForm({ ...form, email: e.target.value })
-    //       }
-    //       className="h-11 text-base"
-    //     />
-
-    //     {/* ROLE SELECT */}
-    //     <select
-    //       value={form.role}
-    //       onChange={(e) =>
-    //         setForm({
-    //           ...form,
-    //           role: e.target.value as UpdateUserForm["role"],
-    //         })
-    //       }
-    //       className="w-full h-11 border rounded-md px-3 text-base bg-white"
-    //     >
-    //       <option value="ADMIN">ADMIN</option>
-    //       <option value="MANAGER">MANAGER</option>
-    //       <option value="PRESTATAIRE">PRESTATAIRE</option>
-    //       <option value="EXECUTANT">EXECUTANT</option>
-    //     </select>
-
-    //     {error && (
-    //       <p className="text-sm text-black">
-    //         {error}
-    //       </p>
-    //     )}
-
-    //     <Button
-    //       onClick={submit}
-    //       className="w-full h-11 text-base font-medium cursor-pointer"
-    //       disabled={saving}
-    //     >
-    //       {saving ? "Mise à jour..." : "Mettre à jour"}
-    //     </Button>
-
-    //   </div>
-
-    // </div>
-    // </div>
   )
 }

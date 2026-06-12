@@ -5,13 +5,8 @@ import { useAuth } from "@/features/auth/auth-provider"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 import { useRouter } from "next/navigation"
-
-type CreateUserForm = {
-  name: string
-  email: string
-  password: string
-  role: "EXECUTANT" | "PRESTATAIRE" | "MANAGER"
-}
+import { UserRole } from "@/types/database"
+import { CreateUserForm } from "@/types/forms"
 
 export default function CreateUserPage() {
   const router = useRouter()
@@ -27,12 +22,22 @@ export default function CreateUserPage() {
   const [error, setError] = useState("")
   const { user, accessToken } = useAuth()
 
+  const availableRoles =
+  user?.role === "ADMIN"
+    ? ["MANAGER", "PRESTATAIRE", "EXECUTANT"]
+    : ["PRESTATAIRE", "EXECUTANT"]
+
   
   useEffect(() => {
+    if (!user) return
     if (!accessToken) return
 
-    if(["PRESATATAIRE", "EXECUTANT"].includes(user?.role ?? "")){
-      router.back()
+    if (
+      user?.role === "PRESTATAIRE" ||
+      user?.role === "EXECUTANT"
+    ) {
+      router.replace("/")
+      return
     }
 
   }, [accessToken, user])
@@ -121,9 +126,11 @@ export default function CreateUserPage() {
             })
           }
         >
-          <option value="EXECUTANT">EXECUTANT</option>
-          <option value="PRESTATAIRE">PRESTATAIRE</option>
-          <option value="MANAGER">MANAGER</option>
+          {availableRoles.map((role) => (
+            <option key={role} value={role}>
+              {role}
+            </option>
+          ))}
         </select>
       </div>
 
@@ -137,81 +144,6 @@ export default function CreateUserPage() {
 
   </div>
 </div>
-
-    // <div className="flex items-center justify-center min-h-[80vh]">
-
-    //   <div className="space-y-6 w-[360px]">
-
-    //     <h1 className="text-xl font-semibold tracking-tight text-center">
-    //       Créer utilisateur
-    //     </h1>
-
-    //     <div className="space-y-4">
-
-    //       <Input
-    //         placeholder="Nom"
-    //         value={form.name}
-    //         onChange={(e) =>
-    //           setForm({ ...form, name: e.target.value })
-    //         }
-    //         className="h-11 text-base"
-    //       />
-
-    //       <Input
-    //         placeholder="Email"
-    //         value={form.email}
-    //         onChange={(e) =>
-    //           setForm({ ...form, email: e.target.value })
-    //         }
-    //         className="h-11 text-base"
-    //       />
-
-    //       <Input
-    //         type="password"
-    //         placeholder="Password"
-    //         value={form.password}
-    //         onChange={(e) =>
-    //           setForm({ ...form, password: e.target.value })
-    //         }
-    //         className="h-11 text-base"
-    //       />
-
-    //       {/* SELECT FULL WIDTH */}
-    //       <select
-    //         value={form.role}
-    //         onChange={(e) =>
-    //           setForm({
-    //             ...form,
-    //             role: e.target.value as CreateUserForm["role"],
-    //           })
-    //         }
-    //         className="w-full h-11 px-3 rounded-md border text-base bg-white"
-    //       >
-    //         <option value="EXECUTANT">EXECUTANT</option>
-    //         <option value="PRESTATAIRE">PRESTATAIRE</option>
-    //         <option value="MANAGER">MANAGER</option>
-    //       </select>
-
-    //       {error && (
-    //         <p className="text-sm text-black">
-    //           {error}
-    //         </p>
-    //       )}
-
-    //       {/* BUTTON FULL WIDTH */}
-    //       <Button
-    //         onClick={submit}
-    //         className="w-full h-11 text-base font-medium"
-    //         disabled={loading}
-    //       >
-    //         {loading ? "Création..." : "Créer"}
-    //       </Button>
-
-    //     </div>
-
-    //   </div>
-
-    // </div>
   )
 }
 

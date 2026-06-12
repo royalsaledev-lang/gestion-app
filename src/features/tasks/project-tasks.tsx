@@ -5,16 +5,15 @@ import { useAuth } from "@/features/auth/auth-provider";
 import {
   getTasks,
   createTask,
-  submitTask,
   approveManager,
-  approvePrestataire,
   assignTask,
+  completeTask,
   updateTask,
+  rejectTask,
 } from "@/features/tasks/task.service";
-import { UserLite, Project } from "@/types/database";
-import { Task, UpdateTaskDTO } from "@/types/task";
-import { log } from "console";
 
+import { UserLite, Project, Task } from "@/types/database";
+import { UpdateTaskDTO } from "@/types/task";
 
 interface Props {
   membersList: UserLite[];
@@ -38,10 +37,14 @@ function getStatusColor(status: string) {
   }
 }
 
-export function ProjectTasks({ membersList, project }: Props) {
+export function ProjectTasks({
+  membersList,
+  project,
+}: Props) {
   const { accessToken, user } = useAuth();
 
   const [tasks, setTasks] = useState<Task[]>([]);
+
   const [form, setForm] = useState({
     title: "",
     description: "",
@@ -49,151 +52,187 @@ export function ProjectTasks({ membersList, project }: Props) {
     startDate: "",
     deadline: "",
     assignedToId: "",
-  })
-  const [editForm, setEditForm] = useState<UpdateTaskDTO>({
-    title: "",
-    description: "",
-    priority: "MEDIUM",
-    startDate: "",
-    deadline: "",
-    assignedToId: "",
-  })
-  const [loading, setLoading] = useState(false);
-  const [editingId, setEditingId] = useState<string | null>(null)
-  const [editTitle, setEditTitle] = useState("")
+  });
 
-  // 🔹 load tasks
-  useEffect(() => {
-    if (!membersList && !accessToken) return;
-
-    getTasks(accessToken as string).then((data) => {
-      const filtered = data.filter((t: Task) => t.projectId === project.id);
-      setTasks(filtered);
+  const [editForm, setEditForm] =
+    useState<UpdateTaskDTO>({
+      title: "",
+      description: "",
+      priority: "MEDIUM",
+      startDate: "",
+      deadline: "",
+      assignedToId: "",
     });
-  }, [accessToken, project.id]);  
 
-  // 🔹 create task
-  // async function handleCreate() {
-  //   if (!accessToken || !title) return;
+  const [loading, setLoading] = useState(false);
 
-  //   setLoading(true);
+  const [editingId, setEditingId] =
+    useState<string | null>(null);
 
-  //   await createTask(
-  //     {
-  //       title,
-  //       projectId: project.id,
-  //       priority: "MEDIUM",
-  //     },
-  //     accessToken,
-  //   );
+  useEffect(() => {
+    if (!accessToken) return;
 
-  //   const updated = await getTasks(accessToken);
-  //   setTasks(updated.filter((t: Task) => t.projectId === project.id));
+    async function loadTasks() {
+      try {
+        const data = await getTasks(
+          accessToken as string
+        );
 
-  //   setTitle("");
-  //   setTimeout(() => {
-  //     setLoading(false);
-  //   }, 2000);
-  // }
+        setTasks(
+          data.filter(
+            (t: Task) => t.projectId === project.id
+          )
+        )
+      } catch (error) {
+        console.error(error);
+      }
+    }
+
+    loadTasks();
+  }, [accessToken, project.id]);
+
+  async function refreshTasks() {
+    if (!accessToken) return;
+
+    const updated = await getTasks(
+      accessToken
+    );
+
+    setTasks(
+      updated.filter(
+        (task: Task) =>
+          task.projectId === project.id
+      )
+    );
+  }
 
   async function handleCreate() {
-    if (!accessToken || !form.title) return
+    if (!accessToken || !form.title.trim())
+      return;
 
-    setLoading(true)
+    try {
+      setLoading(true);
 
-    const res = await createTask(
-      {
-        title: form.title,
-        description: form.description,
-        priority: form.priority as "LOW" | "MEDIUM" | "HIGH" | "URGENT",
-        startDate: form.startDate
-          ? new Date(form.startDate).toISOString()
-          : undefined,
-        deadline: form.deadline
-          ? new Date(form.deadline).toISOString()
-          : undefined,
-        assignedToId: form.assignedToId || undefined,
-        projectId: project.id,
-      },
-      accessToken
-    )
+      await createTask(
+        {
+          title: form.title,
+          description:
+            form.description || undefined,
 
-    console.log(res)
+          priority: form.priority as
+            | "LOW"
+            | "MEDIUM"
+            | "HIGH"
+            | "URGENT",
 
-    const updated = await getTasks(accessToken)
-    setTasks(updated.filter((t: Task) => t.projectId === project.id))
+          startDate: form.startDate
+            ? new Date(
+                form.startDate
+              ).toISOString()
+            : undefined,
 
-    setForm({
-      title: "",
-      description: "",
-      priority: "MEDIUM",
-      startDate: "",
-      deadline: "",
-      assignedToId: "",
-    })
+          deadline: form.deadline
+            ? new Date(
+                form.deadline
+              ).toISOString()
+            : undefined,
 
-    setTimeout(() => {
-      setLoading(false)
-    }, 2000);
+          assignedToId:
+            form.assignedToId || undefined,
+
+          projectId: project.id,
+        },
+        accessToken
+      );
+
+      await refreshTasks();
+
+      setForm({
+        title: "",
+        description: "",
+        priority: "MEDIUM",
+        startDate: "",
+        deadline: "",
+        assignedToId: "",
+      });
+    } catch (error) {
+      console.error(error);
+    } finally {
+      setLoading(false);
+    }
   }
 
-  console.log(tasks);
-  
-  
-
-  // async function handleUpdate(taskId: string) {
-  //   if (!accessToken) return
-
-  //   await updateTask(
-  //     taskId,
-  //     {
-  //       title: editTitle,
-  //     },
-  //     accessToken
-  //   )
-
-  //   const updated = await getTasks(accessToken)
-  //   setTasks(updated.filter((t: Task) => t.projectId === project.id))
-
-  //   setEditingId(null)
-  //   setEditTitle("")
-  // }
-
-  // 🔹 progression
-  async function handleUpdate(taskId: string) {
+  async function reloadTasks() {
     if (!accessToken) return
 
-    await updateTask(taskId, {
-      ...editForm,
-      startDate: form.startDate
-        ? new Date(form.startDate).toISOString()
-        : undefined,
-      deadline: form.deadline
-        ? new Date(form.deadline).toISOString()
-        : undefined,
-      assignedToId: form.assignedToId || undefined,
-    }, accessToken)
+    const data = await getTasks(accessToken)
 
-    const updated = await getTasks(accessToken)
-    setTasks(updated.filter((t: Task) => t.projectId === project.id))
-
-    setEditingId(null)
-    setEditForm({
-      title: "",
-      description: "",
-      priority: "MEDIUM",
-      startDate: "",
-      deadline: "",
-      assignedToId: "",
-    })
+    setTasks(
+      data.filter(
+        (task: Task) =>
+          task.projectId === project.id
+      )
+    )
   }
-  
-  
-  const completed = tasks.filter((t) => t.status === "COMPLETED").length;
-  const progress = tasks.length
-    ? Math.round((completed / tasks.length) * 100)
-    : 0;
 
+  async function handleUpdate(
+    taskId: string
+  ) {
+    if (!accessToken) return;
+
+    try {
+      await updateTask(
+        taskId,
+        {
+          ...editForm,
+
+          startDate: editForm.startDate
+            ? new Date(
+                editForm.startDate
+              ).toISOString()
+            : undefined,
+
+          deadline: editForm.deadline
+            ? new Date(
+                editForm.deadline
+              ).toISOString()
+            : undefined,
+
+          assignedToId:
+            editForm.assignedToId ||
+            undefined,
+        },
+        accessToken
+      );
+
+      await refreshTasks();
+
+      setEditingId(null);
+
+      setEditForm({
+        title: "",
+        description: "",
+        priority: "MEDIUM",
+        startDate: "",
+        deadline: "",
+        assignedToId: "",
+      });
+    } catch (error) {
+      console.error(error);
+    }
+  }
+
+  const completed = tasks.filter(
+    (task) =>
+      task.status === "COMPLETED"
+  ).length;
+
+  const progress = tasks.length
+    ? Math.round(
+        (completed / tasks.length) * 100
+      )
+    : 0;
+    
   return (
     <div className="space-y-6">
       {/* 🔥 CREATE */}
@@ -228,36 +267,59 @@ export function ProjectTasks({ membersList, project }: Props) {
             <option value="URGENT">URGENT</option>
           </select>
 
-          <select
-            className="border h-10 px-2 w-full"
-            value={form.assignedToId}
-            onChange={(e) =>
-              setForm({ ...form, assignedToId: e.target.value })
-            }
-          >
-            <option value="">Assigner</option>
-            {membersList.map((m) => (
-              <option key={m.id} value={m.id}>
-                {m.name}
-              </option>
-            ))}
-          </select>
+{(user?.role === "ADMIN" ||
+  user?.role === "MANAGER") && (
+  <select
+    className="border h-10 px-2 w-full"
+    value={form.assignedToId}
+    onChange={(e) =>
+      setForm({
+        ...form,
+        assignedToId: e.target.value,
+      })
+    }
+  >
+    <option value="">
+      Assigner un exécutant
+    </option>
+
+    {membersList
+      .filter(
+        (member) =>
+          member.role === "EXECUTANT"
+      )
+      .map((member) => (
+        <option
+          key={member.id}
+          value={member.id}
+        >
+          {member.name}
+        </option>
+      ))}
+  </select>
+)}
 
           <input
             type="datetime-local"
             className="border h-10 px-2 w-full"
-            value={form.startDate}
+            value={editForm.startDate || ""}
             onChange={(e) =>
-              setForm({ ...form, startDate: e.target.value })
+              setEditForm({
+                ...editForm,
+                startDate: e.target.value,
+              })
             }
           />
 
           <input
             type="datetime-local"
             className="border h-10 px-2 w-full"
-            value={form.deadline}
+            value={editForm.deadline || ""}
             onChange={(e) =>
-              setForm({ ...form, deadline: e.target.value })
+              setEditForm({
+                ...editForm,
+                deadline: e.target.value,
+              })
             }
           />
 
@@ -283,31 +345,304 @@ export function ProjectTasks({ membersList, project }: Props) {
       </div>
 
       {/* 🔥 LIST */}
-      <div className="space-y-3">
+<div className="grid gap-4">
+  {tasks.map((task) => (
+    <div
+      key={task.id}
+      className="bg-white border border-slate-200 rounded-xl p-5 shadow-sm hover:shadow-md transition-all"
+    >
+      {/* HEADER */}
+      <div className="flex items-start justify-between gap-4">
+        <div className="flex-1">
+          {editingId === task.id &&
+          ["ADMIN", "MANAGER"].includes(user?.role ?? "") ? (
+            <div className="space-y-3">
+              <input
+                value={editForm.title}
+                onChange={(e) =>
+                  setEditForm({
+                    ...editForm,
+                    title: e.target.value,
+                  })
+                }
+                className="w-full border rounded-lg px-3 h-10"
+                placeholder="Titre"
+              />
+
+              <textarea
+                value={editForm.description || ""}
+                onChange={(e) =>
+                  setEditForm({
+                    ...editForm,
+                    description: e.target.value,
+                  })
+                }
+                className="w-full border rounded-lg p-3 min-h-[80px]"
+                placeholder="Description"
+              />
+
+              <div className="grid md:grid-cols-3 gap-3">
+                <select
+                  value={editForm.priority}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      priority: e.target.value as
+                        | "LOW"
+                        | "MEDIUM"
+                        | "HIGH"
+                        | "URGENT",
+                    })
+                  }
+                  className="border rounded-lg px-3 h-10"
+                >
+                  <option value="LOW">LOW</option>
+                  <option value="MEDIUM">MEDIUM</option>
+                  <option value="HIGH">HIGH</option>
+                  <option value="URGENT">URGENT</option>
+                </select>
+
+                <input
+                  type="datetime-local"
+                  value={editForm.startDate || ""}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      startDate: e.target.value,
+                    })
+                  }
+                  className="border rounded-lg px-3 h-10"
+                />
+
+                <input
+                  type="datetime-local"
+                  value={editForm.deadline || ""}
+                  onChange={(e) =>
+                    setEditForm({
+                      ...editForm,
+                      deadline: e.target.value,
+                    })
+                  }
+                  className="border rounded-lg px-3 h-10"
+                />
+              </div>
+            </div>
+          ) : (
+            <>
+              <h3
+                onClick={() => {
+                  setEditingId(task.id)
+
+                  setEditForm({
+                    title: task.title,
+                    description: task.description,
+                    priority: task.priority,
+                    startDate: task.startDate,
+                    deadline: task.deadline,
+                    assignedToId: task.assignedToId,
+                  })
+                }}
+                className="font-semibold text-lg cursor-pointer hover:text-blue-600"
+              >
+                {task.title}
+              </h3>
+
+              {task.description && (
+                <p className="text-sm text-slate-500 mt-1">
+                  {task.description}
+                </p>
+              )}
+            </>
+          )}
+        </div>
+
+        <span
+          className={`px-3 py-1 rounded-full text-xs font-medium text-white ${getStatusColor(
+            task.status
+          )}`}
+        >
+          {task.status}
+        </span>
+      </div>
+
+      {/* INFOS */}
+      <div className="grid md:grid-cols-4 gap-3 mt-5 text-sm">
+        <div>
+          <p className="text-slate-400">Priorité</p>
+          <p className="font-medium">{task.priority}</p>
+        </div>
+
+        <div>
+          <p className="text-slate-400">Assigné à</p>
+          <p className="font-medium">
+            {membersList.find(
+              (member) =>
+                member.id === task.assignedToId
+            )?.name || "Non assigné"}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-slate-400">Début</p>
+          <p className="font-medium">
+            {task.startDate
+              ? new Date(task.startDate).toLocaleDateString()
+              : "-"}
+          </p>
+        </div>
+
+        <div>
+          <p className="text-slate-400">Échéance</p>
+          <p className="font-medium">
+            {task.deadline
+              ? new Date(task.deadline).toLocaleDateString()
+              : "-"}
+          </p>
+        </div>
+      </div>
+
+      {/* ASSIGNATION */}
+      {(user?.role === "ADMIN" ||
+        user?.role === "MANAGER") && (
+        <div className="mt-5">
+          <select
+            onChange={async (e) => {
+              if (!accessToken) return
+
+              if (!e.target.value) return
+
+              await assignTask(
+                task.id,
+                e.target.value,
+                accessToken
+              )
+
+              await reloadTasks()
+            }}
+            className="border rounded-lg h-10 px-3"
+          >
+            <option value="">
+              Assigner un utilisateur
+            </option>
+
+            {membersList.map((m) => (
+              <option
+                key={m.id}
+                value={m.id}
+              >
+                {m.name}
+              </option>
+            ))}
+          </select>
+        </div>
+      )}
+
+      {/* ACTIONS */}
+      <div className="flex flex-wrap gap-2 mt-5 pt-4 border-t">
+        {editingId === task.id &&
+          ["ADMIN", "MANAGER"].includes(
+            user?.role ?? ""
+          ) && (
+            <>
+              <button
+                onClick={() => {
+                  setEditingId(null)
+
+                  setEditForm({
+                    title: "",
+                    description: "",
+                    priority: "MEDIUM",
+                    startDate: "",
+                    deadline: "",
+                    assignedToId: "",
+                  })
+                }}
+                className="px-4 h-9 rounded-lg border"
+              >
+                Annuler
+              </button>
+
+              <button
+                onClick={() =>
+                  handleUpdate(task.id)
+                }
+                className="px-4 h-9 rounded-lg bg-black text-white"
+              >
+                Enregistrer
+              </button>
+            </>
+          )}
+
+        {(user?.role === "EXECUTANT" ||
+          user?.role === "PRESTATAIRE") &&
+          task.assignedToId === user?.id &&
+          task.status !== "COMPLETED" &&
+          task.status !==
+            "VALIDATION_REQUESTED" && (
+            <button
+              onClick={async () => {
+                if (!accessToken) return
+
+                await completeTask(
+                  task.id,
+                  accessToken
+                )
+
+                await reloadTasks()
+              }}
+              className="px-4 h-9 rounded-lg bg-green-600 text-white"
+            >
+              Terminer
+            </button>
+          )}
+
+        {(user?.role === "ADMIN" ||
+          user?.role === "MANAGER") &&
+          task.status ===
+            "VALIDATION_REQUESTED" && (
+            <>
+              <button
+                onClick={async () => {
+                  await rejectTask(
+                    task.id,
+                    accessToken!
+                  )
+
+                  await reloadTasks()
+                }}
+                className="px-4 h-9 rounded-lg bg-red-600 text-white"
+              >
+                Rejeter
+              </button>
+
+              <button
+                onClick={async () => {
+                  await approveManager(
+                    task.id,
+                    accessToken!
+                  )
+
+                  await reloadTasks()
+                }}
+                className="px-4 h-9 rounded-lg bg-blue-600 text-white"
+              >
+                Finaliser
+              </button>
+            </>
+          )}
+      </div>
+    </div>
+  ))}
+</div>
+
+      {/* 🔥 LIST */}
+      {/* <div className="space-y-3">
         {tasks.map((task) => (
           <div
             key={task.id}
             className="border rounded p-3 flex justify-between items-center"
           >
             <div className="flex justify-between items-center">
-              {/* {editingId === task.id && ["ADMIN", "MANAGER", "PRESTATAIRE"].includes(user?.role ?? "") ? (
-                  <input
-                    className="border px-2 h-8"
-                    value={editTitle}
-                    onChange={(e) => setEditTitle(e.target.value)}
-                  />
-                ) : (
-                  <p
-                    className="font-medium cursor-pointer"
-                    onClick={() => {
-                      setEditingId(task.id)
-                      setEditForm(task)
-                    }}
-                  >
-                    {task.title}
-                  </p>
-                )} */}
-
                 {editingId === task.id && ["ADMIN", "MANAGER", "PRESTATAIRE"].includes(user?.role ?? "") ? (
                   <div className="space-y-1">
                     <input
@@ -357,7 +692,7 @@ export function ProjectTasks({ membersList, project }: Props) {
                     <input
                       type="datetime-local"
                       className="border h-10 px-2 w-full"
-                      value={form.startDate}
+                      value={editForm.startDate || ""}
                       onChange={(e) =>
                         setForm({ ...form, startDate: e.target.value })
                       }
@@ -366,7 +701,7 @@ export function ProjectTasks({ membersList, project }: Props) {
                     <input
                       type="datetime-local"
                       className="border h-10 px-2 w-full"
-                      value={form.deadline}
+                      value={editForm.deadline || ""}
                       onChange={(e) =>
                         setForm({ ...form, deadline: e.target.value })
                       }
@@ -377,7 +712,14 @@ export function ProjectTasks({ membersList, project }: Props) {
                     className="font-medium cursor-pointer"
                     onClick={() => {
                       setEditingId(task.id)
-                      setEditForm(task)
+                      setEditForm({
+                        title: task.title,
+                        description: task.description,
+                        priority: task.priority,
+                        startDate: task.startDate,
+                        deadline: task.deadline,
+                        assignedToId: task.assignedToId,
+                      })
                     }}
                   >
                     {task.title}
@@ -393,25 +735,31 @@ export function ProjectTasks({ membersList, project }: Props) {
               </span>
             </div>
 
-            {/* Assigned */}
             <p className="text-sm text-gray-500">
-              Assigné à : {task.assignedTo?.name || "Personne"}
+              Assigné à :{" "}
+              {membersList.find(
+                (member) => member.id === task.assignedToId
+              )?.name || "Personne"}
             </p>
 
-            {/* Assign dropdown */}
             {(user?.role === "ADMIN" ||
-              user?.role === "MANAGER" ||
-              user?.role === "PRESTATAIRE") && (
+              user?.role === "MANAGER") && (
               <div className="flex gap-2">
                 <select
-                  onChange={(e) => {
-                    if (!membersList && !accessToken) return;
+                  onChange={async(e) => {
+                    if (!accessToken) return;
 
-                    assignTask(task.id, e.target.value, accessToken!)
-                    getTasks(accessToken as string).then((data) => {
-                      const filtered = data.filter((t: Task) => t.projectId === project.id);
-                      setTasks(filtered);
-                    });
+                    const userId = e.target.value
+
+                    if (!userId) return
+
+                    await assignTask(
+                      task.id,
+                      userId,
+                      accessToken
+                    )
+
+                    await reloadTasks()
                   }}
                   className="border rounded px-2"
                 >
@@ -427,78 +775,78 @@ export function ProjectTasks({ membersList, project }: Props) {
               </div>
             )}
 
-            {/* 🔥 ACTIONS */}
             <div className="flex gap-2">
-              {editingId === task.id && ["ADMIN", "MANAGER", "PRESTATAIRE"].includes(user?.role ?? "") && (
+              {editingId === task.id && ["ADMIN", "MANAGER"].includes(user?.role ?? "") && (
+                <>
+                <button
+  onClick={() => {
+    setEditingId(null)
+
+    setEditForm({
+      title: "",
+      description: "",
+      priority: "MEDIUM",
+      startDate: "",
+      deadline: "",
+      assignedToId: "",
+    })
+  }}
+  className="text-xs border px-2"
+>
+  Cancel
+</button>
                 <button
                   onClick={() => handleUpdate(task.id)}
                   className="text-xs border px-2"
                 >
                   Save
                 </button>
+                </>
               )}
-              {/* ✅ SUBMIT (EXECUTANT / PRESTATAIRE assigné seulement + bon status) */}
+                
               {(user?.role === "EXECUTANT" || user?.role === "PRESTATAIRE") &&
                 task.assignedToId === user?.id &&
-                task.status !== "COMPLETED" && (
+                task.status !== "COMPLETED" && task.status !== "VALIDATION_REQUESTED" && (
                   <button
-                    onClick={() => {
-                      if (!membersList && !accessToken) return;
+                    onClick={async() => {
+                      if (!accessToken) return;
 
-                      submitTask(task.id, accessToken!)
-                      getTasks(accessToken as string).then((data) => {
-                        const filtered = data.filter((t: Task) => t.projectId === project.id);
-                        setTasks(filtered);
-                      });
+                      await completeTask(task.id, accessToken!)
+                      await reloadTasks()
                     }}
                     className="text-xs border px-2 cursor-pointer"
                   >
-                    Submit
+                    Terminer
                   </button>
                 )}
 
-              {/* ✅ PRESTATAIRE VALIDATION */}
-              {user?.role === "PRESTATAIRE" &&
-                task.status === "VALIDATION_REQUESTED" && (
-                  <button
-                    onClick={() => {
-                      if (!membersList && !accessToken) return;
-
-                      approvePrestataire(task.id, accessToken!)
-                      getTasks(accessToken as string).then((data) => {
-                        const filtered = data.filter((t: Task) => t.projectId === project.id);
-                        setTasks(filtered);
-                      });
-                    }}
-                    className="text-xs border px-2 cursor-pointer"
-                  >
-                    Valider
-                  </button>
-                )}
-
-              {/* ✅ MANAGER FINAL APPROVAL */}
               {(user?.role === "MANAGER" || user?.role === "ADMIN") &&
-                (task.status === "APPROVED" ||
-                  task.status === "VALIDATION_REQUESTED") && (
-                  <button
-                    onClick={() => {
-                      if (!membersList && !accessToken) return;
-
-                      approveManager(task.id, accessToken!)
-                      getTasks(accessToken as string).then((data) => {
-                        const filtered = data.filter((t: Task) => t.projectId === project.id);
-                        setTasks(filtered);
-                      });
-                    }}
-                    className="text-xs border px-2 cursor-pointer"
-                  >
-                    Finaliser
-                  </button>
-                )}
+                task.status === "VALIDATION_REQUESTED" && (
+                  <>
+                    <button
+                      onClick={async () => {
+                        await rejectTask(task.id, accessToken!)
+                        await reloadTasks()
+                      }}
+                      className="text-xs border px-2 cursor-pointer"
+                    >
+                      Rejeter
+                    </button>
+                    <button
+                      onClick={async() => {
+                        await approveManager(task.id, accessToken!)
+                        await reloadTasks()
+                      }}
+                      className="text-xs border px-2 cursor-pointer"
+                    >
+                      Finaliser
+                    </button>
+                  </>
+              )}
             </div>
           </div>
         ))}
-      </div>
+      </div> */}
     </div>
   );
 }

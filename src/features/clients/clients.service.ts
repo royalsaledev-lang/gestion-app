@@ -32,7 +32,7 @@ export async function getClients(
     },
   })
 
-  if (!res.ok) throw new Error("Erreur chargement clients")
+  if (!res.ok) throw new Error("Erreur chargement clients")  
 
   return res.json()
 }

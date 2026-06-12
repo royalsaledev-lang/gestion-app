@@ -45,7 +45,7 @@ export default function EditProjectPage() {
           Modifier projet
         </h1>
 
-        <ProjectForm initialData={project} loading={loading} onSubmit={handleUpdate} setLoading={setLoading} />
+        <ProjectForm initialData={project} loading={loading} onSubmit={handleUpdate} />
       </div>
     </div>
   )

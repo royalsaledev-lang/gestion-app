@@ -27,7 +27,7 @@ export default function CreateProjectPage() {
           Créer projet
         </h1>
 
-        <ProjectForm loading={loading} onSubmit={handleCreate} setLoading={setLoading} />
+        <ProjectForm loading={loading} onSubmit={handleCreate} />
       </div>
     </div>
   )

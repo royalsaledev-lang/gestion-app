@@ -15,7 +15,7 @@ export interface DashboardStats {
   tasksCompleted: number
   tasksLate: number
 
-  freelancersActive: number
+  participantsActive: number
 
   revenueExpected: number
   revenueReceived: number

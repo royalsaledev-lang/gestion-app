@@ -31,8 +31,14 @@ function ClientActions({
     <div className="flex gap-2">
       <Button
         variant="outline"
+        onClick={() => router.push(`/clients/${client.id}`)}
+      >
+        Voir
+      </Button>
+
+      <Button
+        variant="outline"
         onClick={() => router.push(`/clients/${client.id}/edit`)}
-        className="h-9 text-sm cursor-pointer"
       >
         Edit
       </Button>
@@ -40,7 +46,6 @@ function ClientActions({
       <Button
         variant="outline"
         onClick={handleDelete}
-        className="h-9 text-sm cursor-pointer"
       >
         Supprimer
       </Button>

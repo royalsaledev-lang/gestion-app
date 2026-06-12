@@ -29,14 +29,18 @@ export default function UsersPage() {
   }
 
   useEffect(() => {
+    if (!user) return
     if (!accessToken) return
-    if(["PRESATATAIRE", "EXECUTANT"].includes(user?.role ?? "")){
-      router.back()
+    if (
+      user?.role === "PRESTATAIRE" ||
+      user?.role === "EXECUTANT"
+    ) {
+      router.replace("/")
+      return
     }
 
     fetchUsers()
   }, [accessToken, user])
-
 
 
   if (loading) return <p className="text-sm text-gray-500">Chargement...</p>
@@ -72,6 +76,7 @@ export default function UsersPage() {
     </div>
   )
 }
+
 
 
 // "use client"
