@@ -267,37 +267,37 @@ export function ProjectTasks({
             <option value="URGENT">URGENT</option>
           </select>
 
-{(user?.role === "ADMIN" ||
-  user?.role === "MANAGER") && (
-  <select
-    className="border h-10 px-2 w-full"
-    value={form.assignedToId}
-    onChange={(e) =>
-      setForm({
-        ...form,
-        assignedToId: e.target.value,
-      })
-    }
-  >
-    <option value="">
-      Assigner un exécutant
-    </option>
+          {(user?.role === "ADMIN" ||
+            user?.role === "MANAGER") && (
+            <select
+              className="border h-10 px-2 w-full"
+              value={form.assignedToId}
+              onChange={(e) =>
+                setForm({
+                  ...form,
+                  assignedToId: e.target.value,
+                })
+              }
+            >
+              <option value="">
+                Assigner un exécutant
+              </option>
 
-    {membersList
-      .filter(
-        (member) =>
-          member.role === "EXECUTANT"
-      )
-      .map((member) => (
-        <option
-          key={member.id}
-          value={member.id}
-        >
-          {member.name}
-        </option>
-      ))}
-  </select>
-)}
+              {membersList
+                .filter(
+                  (member) =>
+                    member.role === "EXECUTANT"
+                )
+                .map((member) => (
+                  <option
+                    key={member.id}
+                    value={member.id}
+                  >
+                    {member.name}
+                  </option>
+                ))}
+            </select>
+          )}
 
           <input
             type="datetime-local"

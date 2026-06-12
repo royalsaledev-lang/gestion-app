@@ -171,7 +171,7 @@ export function ProjectTabs({ projectId }: Props) {
           className="cursor-pointer"
           onClick={() => setTab("tasks")}
         >
-          Tasks
+          Tâches
         </button>
 
         {(user?.role === "ADMIN" ||
@@ -180,7 +180,7 @@ export function ProjectTabs({ projectId }: Props) {
             className="cursor-pointer"
             onClick={() => setTab("payments")}
           >
-            Payments
+            Paiement
           </button>
         )}
 
@@ -188,7 +188,7 @@ export function ProjectTabs({ projectId }: Props) {
           className="cursor-pointer"
           onClick={() => setTab("activity")}
         >
-          Activity
+          Activité
         </button>
       </div>
 

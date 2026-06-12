@@ -73,7 +73,16 @@ export interface Client {
 
   createdAt: string
 
-  projects?: Project[]
+  projects?: {
+    id: string
+    name: string
+    description?: string
+    status: string
+    manager?: {
+      id: string
+      name: string
+    }
+  }[]
 }
 
 export interface Project {

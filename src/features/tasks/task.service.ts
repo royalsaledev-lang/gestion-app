@@ -1,5 +1,5 @@
 import { CreateTaskDTO, UpdateTaskDTO } from "@/types/task"
-import { Task } from "@/types/database"
+import { Client, Task } from "@/types/database"
 
 export async function getTasks(
   token: string
@@ -15,6 +15,45 @@ export async function getTasks(
 
   if (!res.ok) {
     throw new Error("Erreur chargement tâches")
+  }
+
+  return res.json()
+}
+
+export async function getClientById(
+  id: string,
+  token: string,
+  params?: {
+    search?: string
+    status?: string
+  }
+): Promise<Client> {
+
+  const query = new URLSearchParams()
+
+  if (params?.search) {
+    query.append("search", params.search)
+  }
+
+  if (params?.status) {
+    query.append("status", params.status)
+  }
+
+  const res = await fetch(
+    `${process.env.NEXT_PUBLIC_API_URL}/clients/${id}${
+      query.toString()
+        ? `?${query.toString()}`
+        : ""
+    }`,
+    {
+      headers: {
+        Authorization: `Bearer ${token}`,
+      },
+    }
+  )
+
+  if (!res.ok) {
+    throw new Error("Client introuvable")
   }
 
   return res.json()
