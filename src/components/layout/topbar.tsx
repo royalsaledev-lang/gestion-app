@@ -10,10 +10,6 @@ export function Topbar() {
 
       <div className="flex items-center gap-4">
 
-        {/* <button className="text-sm">
-          Notifications
-        </button> */}
-
         <Avatar name="Admin User" />
 
       </div>
