@@ -40,17 +40,21 @@ export type UpdateProjectDTO = Partial<CreateProjectDTO>
 
 export interface CreateTaskDTO {
   title: string
+
   description?: string
 
   projectId: string
 
   assignedToId?: string
 
+  parentTaskId?: string
+
   startDate?: string
   deadline?: string
 
   priority: Priority
-  status: TaskStatus
+
+  status?: TaskStatus
 }
 
 

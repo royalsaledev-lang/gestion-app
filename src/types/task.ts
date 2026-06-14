@@ -4,6 +4,7 @@ export type TaskStatus =
   | "DRAFT"
   | "IN_PROGRESS"
   | "VALIDATION_REQUESTED"
+  | "APPROVED"
   | "COMPLETED"
   | "REJECTED"
 
@@ -40,18 +41,26 @@ export interface Task {
   assignedToId?: string
   validatedById?: string
 
+  parentTaskId?: string | null
+
   createdAt: string
   updatedAt?: string
 
   createdBy?: UserLite
   assignedTo?: UserLite
   validatedBy?: UserLite
+
+  comments?: Comment[]
+
+  parentTask?: Task
+  subTasks?: Task[]
 }
 
 export interface CreateTaskDTO extends TaskBaseDTO {
   title: string
   projectId: string
   priority: Priority
+  parentTaskId?: string
 }
 
 export interface UpdateTaskDTO {

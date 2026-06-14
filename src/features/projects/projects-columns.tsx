@@ -46,7 +46,7 @@ export const projectColumns = (refresh: () => void): ColumnDef<Project>[] => [
 
   {
     accessorKey: "manager",
-    header: "Manager",
+    header: "Manageur",
     cell: ({ row }) => row.original.manager?.name ?? "-"
   },
   {

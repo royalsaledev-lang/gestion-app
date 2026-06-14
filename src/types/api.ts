@@ -16,9 +16,14 @@ export interface ProjectParticipantWithUser extends ProjectParticipant {
 
 export interface TaskWithRelations extends Task {
   project?: Project
+
   createdBy?: User
   assignedTo?: User
+
   comments?: Comment[]
+
+  parentTask?: Task
+  subTasks?: Task[]
 }
 
 

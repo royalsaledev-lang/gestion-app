@@ -18,14 +18,14 @@ export function ProjectsSummary({ projects }: Props) {
     <div className="bg-white border border-gray-200 rounded-xl p-4">
 
       <h3 className="text-sm font-medium mb-4">
-        Projects Summary
+        Sommaire Projets
       </h3>
 
       <div className="space-y-2">
 
         <p>Active: {active}</p>
 
-        <p>Completed: {completed}</p>
+        <p>Complète: {completed}</p>
 
       </div>
 

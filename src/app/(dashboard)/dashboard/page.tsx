@@ -23,7 +23,7 @@ export default function DashboardPage() {
 const [data, setData] =
   useState<DashboardResponse | null>(null)
 
-const { accessToken } = useAuth()
+const { accessToken, user } = useAuth()
 
 useEffect(() => {
   if (!accessToken) return
@@ -46,12 +46,15 @@ if (!data) {
     <div className="space-y-6">
 
       <h1 className="text-2xl font-semibold">
-        Dashboard
+        Tableau de bord
       </h1>
 
-      <StatsGrid stats={data.stats} />
-
-      <RevenueChart data={data.revenueData} />
+      {(user?.role === "ADMIN" || user?.role === "MANAGER") && (
+        <>
+          <StatsGrid stats={data.stats} />
+          <RevenueChart data={data.revenueData} />
+        </>
+      )}
 
       <div className="grid grid-cols-2 gap-4">
 
@@ -61,9 +64,9 @@ if (!data) {
 
       </div>
 
-      <RecentActivity activities={data.activities} />
+      {/* <RecentActivity activities={data.activities} /> */}
 
-      <ActivityFeed 
+      {/* <ActivityFeed 
         activities={
             [
                 {
@@ -82,7 +85,7 @@ if (!data) {
                     }
                 }
             ]
-        } />
+        } /> */}
 
     </div>
 

@@ -21,8 +21,8 @@ export type ProjectStatus =
 export type TaskStatus =
   | "DRAFT"
   | "VALIDATION_REQUESTED"
-  | "APPROVED"
   | "IN_PROGRESS"
+  | "APPROVED"
   | "COMPLETED"
   | "REJECTED"
 
@@ -73,16 +73,7 @@ export interface Client {
 
   createdAt: string
 
-  projects?: {
-    id: string
-    name: string
-    description?: string
-    status: string
-    manager?: {
-      id: string
-      name: string
-    }
-  }[]
+  projects?: Project[]
 }
 
 export interface Project {
@@ -126,22 +117,24 @@ export interface Task {
 
   projectId: string
 
-  // Créateur de la tâche
   createdById: string
-
-  // Assignation (EXECUTANT ou PRESTATAIRE)
   assignedToId?: string
-
-  // Validation finale (ADMIN ou MANAGER)
   validatedById?: string
+
+  parentTaskId?: string | null
 
   createdAt: string
   updatedAt?: string
 
-  // Relations
   createdBy?: UserLite
   assignedTo?: UserLite
   validatedBy?: UserLite
+
+  comments?: Comment[]
+
+  parentTask?: Task
+
+  subTasks?: Task[]
 }
 
 
@@ -166,6 +159,9 @@ export interface Payment {
   createdAt: string
 }
 
+export interface ParentTask extends Task {
+  subTasks: Task[]
+}
 
 export interface Comment {
   id: string
@@ -176,8 +172,9 @@ export interface Comment {
   authorId: string
 
   createdAt: string
-}
 
+  author?: UserLite
+}
 
 export interface ActivityLog {
   id: string

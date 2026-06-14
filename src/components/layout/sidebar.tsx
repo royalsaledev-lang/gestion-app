@@ -22,16 +22,16 @@ export function Sidebar() {
 
       <nav className="flex flex-col gap-1 p-2">
 
-        <SidebarItem label="Dashboard" href="/dashboard" />
+        <SidebarItem label="Tableau de bord" href="/dashboard" />
 
         {(user?.role === "ADMIN" || user?.role === "MANAGER") && (
           <SidebarItem label="Clients" href="/clients" />
         )}
 
-        <SidebarItem label="Projects" href="/projects" />
+        <SidebarItem label="Projets" href="/projects" />
 
         {(user?.role === "ADMIN" || user?.role === "MANAGER") && (
-          <SidebarItem label="Users" href="/users" />
+          <SidebarItem label="Utilisateurs" href="/users" />
         )}
 
       </nav>

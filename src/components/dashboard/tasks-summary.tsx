@@ -18,14 +18,14 @@ export function TasksSummary({ tasks }: Props) {
     <div className="bg-white border border-gray-200 rounded-xl p-4">
 
       <h3 className="text-sm font-medium mb-4">
-        Tasks Summary
+        Sommaire Tâches
       </h3>
 
       <div className="space-y-2">
 
-        <p>In Progress: {inProgress}</p>
+        <p>En progrès: {inProgress}</p>
 
-        <p>Completed: {completed}</p>
+        <p>Complète: {completed}</p>
 
       </div>
 
