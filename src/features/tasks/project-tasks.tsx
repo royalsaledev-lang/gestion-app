@@ -359,17 +359,18 @@ export function ProjectTasks({ membersList, project }: Props) {
             }
           />
 
-          <input
-            placeholder="Description"
-            className="border h-10 px-2 w-full"
-            value={form.description}
-            onChange={(e) =>
-              setForm({
-                ...form,
-                description: e.target.value,
-              })
-            }
-          />
+<textarea
+  placeholder="Description"
+  className="border px-2 w-full"
+  rows={4}
+  value={form.description}
+  onChange={(e) =>
+    setForm({
+      ...form,
+      description: e.target.value,
+    })
+  }
+/>
 
           <select
             className="border h-10 px-2 w-full"
@@ -739,10 +740,10 @@ export function ProjectTasks({ membersList, project }: Props) {
             }
             className="border rounded-lg px-3 h-10"
           >
-            <option value="LOW">LOW</option>
-            <option value="MEDIUM">MEDIUM</option>
-            <option value="HIGH">HIGH</option>
-            <option value="URGENT">URGENT</option>
+            <option value="LOW">Faible</option>
+            <option value="MEDIUM">Moyenne</option>
+            <option value="HIGH">Élevée</option>
+            <option value="URGENT">Urgente</option>
           </select>
 
           <input
