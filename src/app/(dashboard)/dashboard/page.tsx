@@ -22,6 +22,8 @@ import {
 export default function DashboardPage() {
 const [data, setData] =
   useState<DashboardResponse | null>(null)
+const [loading, setLoading] = useState(false)
+
 
 const { accessToken, user } = useAuth()
 
@@ -36,10 +38,10 @@ useEffect(() => {
 if (!data) {
   return (
     <div>
-      Chargement...
     </div>
   )
 }
+
 
   return (
 
